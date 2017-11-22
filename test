@@ -1,1 +1,125 @@
-this is a test.
+import 'rxjs/Rx';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/catch';
+import { Observable } from 'rxjs/Observable';
+import { Injectable, OpaqueToken } from '@angular/core';
+import { Http, Headers, Response } from '@angular/http';
+export const API_BASE_URL = new OpaqueToken('API_BASE_URL');
+import { SecurityService } from '../../shared/services/security/security.service';
+import { StorageService } from '../../shared/services/storage.service';
+import { Router } from '@angular/router';
+
+@Injectable()
+export class HttpService {
+    protected jsonParseReviver: (key: string, value: any) => any = undefined;
+    constructor(private router: Router, private _http: Http, private securityService: SecurityService, private storageService: StorageService) {
+    }
+    GetToken<T1, T2, T extends any>(request: T1, url: T2): Observable<T> {
+        return this._http.get(url.toString(), { headers: this.createAuthorizationHeaders(new Headers(), request.toString()) })
+            .map((response) => {
+                return <T>this.MapResponseToDTO(response);
+            }).catch((response: any, caught: any) => {
+                if (response instanceof Response) {
+                    try {
+                        return Observable.of(<T>this.MapResponseToDTO(response));
+                    } catch (e) {
+                        return <Observable<T>><any>Observable.throw(e);
+                    }
+                } else
+                    return <Observable<T>><any>Observable.throw(response);
+            });
+    }
+    Get<T1, T2, T extends any>(request: T1, url: T2): Observable<T> {
+        return this._http.get(url.toString(), { headers: this.createAuthorizationHeader(new Headers()) })
+            .map((response) => {
+                return <T>this.MapResponseToDTO(response);
+            }).catch((response: any, caught: any) => {
+                if (response instanceof Response) {
+                    try {
+                        return Observable.of(<T>this.MapResponseToDTO(response));
+                    } catch (e) {
+                        return <Observable<T>><any>Observable.throw(e);
+                    }
+                } else
+                    return <Observable<T>><any>Observable.throw(response);
+            });
+    }
+    GetModel<T1, T2, T extends any>(request: T1, url: T2): Observable<T> {
+        const content = JSON.stringify(request);
+        return this._http.get(url.toString(), { body: content, headers: this.createAuthorizationHeader(new Headers()) })
+            .map((response) => {
+                return <T>this.MapResponseToDTO(response);
+            }).catch((response: any, caught: any) => {
+                if (response instanceof Response) {
+                    try {
+                        return Observable.of(<T>this.MapResponseToDTO(response));
+                    } catch (e) {
+                        return <Observable<T>><any>Observable.throw(e);
+                    }
+                } else
+                    return <Observable<T>><any>Observable.throw(response);
+            });
+    }
+    Post<T1, T2, T>(request: T1, url: T2): Observable<T> {
+        const content = JSON.stringify(request);
+        return this._http.post(url.toString(), content, { headers: this.createAuthorizationHeader(new Headers()) })
+            .map((response) => {
+                return <T>this.MapResponseToDTO(response);
+            }).catch((response: any, caught: any) => {
+                if (response instanceof Response) {
+                    try {
+                        return Observable.of(<T>this.MapResponseToDTO(response));
+                    } catch (e) {
+                        return <Observable<T>><any>Observable.throw(e);
+                    }
+                } else
+                    return <Observable<T>><any>Observable.throw(response);
+            });
+    }
+    Put<T1, T2, T>(request: T1, url: T2): Observable<T> {
+        const content = JSON.stringify(request);
+        return this._http.put(url.toString(), content, { headers: this.createAuthorizationHeader(new Headers()) })
+            .map((response) => {
+                return <T>this.MapResponseToDTO(response);
+            }).catch((response: any, caught: any) => {
+                if (response instanceof Response) {
+                    try {
+                        return Observable.of(<T>this.MapResponseToDTO(response));
+                    } catch (e) {
+                        return <Observable<T>><any>Observable.throw(e);
+                    }
+                } else
+                    return <Observable<T>><any>Observable.throw(response);
+            });
+    }
+    private MapResponseToDTO<T, T1 extends Response>(response: T1): T {
+        const data = response.text();
+        const status = response.status.toString();
+        if (status === '200' || status === '201' || status === '204') {
+            let result200: T = null;
+            this.securityService.signinSilent();
+            result200 = data === '' ? null : <T>JSON.parse(data, this.jsonParseReviver);
+            return result200;
+        }
+        else {
+            if (status === '401')
+                this.router.navigate(['/unauthorized']);
+            else
+                this.router.navigate(['/loan-estimate/error'], { queryParams: { status: status } });
+        }
+    }
+    private createAuthorizationHeader(headers: Headers) {
+        headers.append('Authorization', 'Bearer ' + this.securityService.getAccessToken());
+        headers.append('Content-Type', 'application/json; charset=UTF-8');
+        headers.append('Access-Control-Allow-Origin', '*');
+        return headers;
+    }
+    private createAuthorizationHeaders(headers: Headers, token: string) {
+        headers.append('Authorization', token);
+        headers.append('Content-Type', 'application/json; charset=UTF-8');
+        headers.append('Access-Control-Allow-Origin', '*');
+        return headers;
+    }
+}
+
+
