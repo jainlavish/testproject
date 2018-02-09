@@ -1,0 +1,469 @@
+import { FormGroup, FormControl, FormArray } from '@angular/forms';
+import { PricingLock } from './pricing-lock';
+import { ApplicationDate } from './application-date';
+import { PropertyInfo } from './property-info';
+import { BrokerCompensation } from './broker-compensation';
+import { LoanInfo } from './loan-info';
+import { Borrower } from './borrower-info';
+import { SectionB } from './sec-b-info';
+import { SectionA } from './sec-a-info';
+import { SectionH } from './sec-h-info';
+import { SectionFG } from './sec-f-g-info';
+import { ImpersonateUser } from './impersonate-user';
+import { SectionCE } from './sec-c-e-info';
+import { ServiceProvider } from './service-provider';
+import { CashToClose } from './cash-to-close';
+import { ForgotPassword } from './forgot-password';
+import { ResetPassword } from './reset-password';
+const PADDING = '000000';
+
+export class CommonValidator {
+
+    DECIMAL_SEPARATOR: string;
+    THOUSANDS_SEPARATOR: string;
+    public formError: { [id: string]: string };
+    storage: any;
+    _validationMessages: { [id: string]: { [id: string]: string } };
+
+    constructor(FG: FormGroup, component: string) {
+        this.storage = sessionStorage;
+        let _this = this;
+        _this.GetDecision(component, FG);
+        this.DECIMAL_SEPARATOR = '.';
+        this.THOUSANDS_SEPARATOR = ',';
+    }
+    GetDecision(name: string, FG: FormGroup) {
+        let ser = null;
+        switch (name.toLowerCase()) {
+            case 'applicationdate':
+                ser = new ApplicationDate(FG);
+                break;
+            case 'borrower':
+                ser = new Borrower(FG);
+                break;
+            case 'loan':
+                ser = new LoanInfo(FG);
+                break;
+            case 'brokercompinfo':
+                ser = new BrokerCompensation(FG);
+                break;
+            case 'property':
+                ser = new PropertyInfo(FG);
+                break;
+            case 'pricing':
+                ser = new PricingLock(FG);
+                break;
+            case 'secbinfo':
+                ser = new SectionB(FG);
+                break;
+            case 'secfg':
+                ser = new SectionFG(FG);
+                break;
+            case 'secainfo':
+                ser = new SectionA(FG);
+                break;
+            case 'sechinfo':
+                ser = new SectionH(FG);
+                break;
+            case 'impersonateuser':
+                ser = new ImpersonateUser(FG);
+                break;
+            case 'cashtoclose':
+                ser = new CashToClose(FG);
+                break;
+            case 'forgetpassword':
+                ser = new ForgotPassword(FG);
+                break;
+            case 'resetpassword':
+                ser = new ResetPassword(FG);
+                break;
+            case 'secce':
+                ser = new SectionCE(FG);
+                break;
+            case 'sspl':
+                ser = new ServiceProvider(FG);
+                break;
+            default: {
+                console.log('Invalid choice');
+                break;
+            }
+        }
+        if (ser !== null) {
+            this.formError = ser.formError;
+            this._validationMessages = ser._validationMessages;
+        }
+    }
+
+    onFocusOut<T extends FormGroup>(customerForm: T, isSaveClicked: boolean) {
+        for (let field in this.formError) {
+            if (this.formError.hasOwnProperty(field)) {
+                let hasError = customerForm.controls[field] !== undefined && (customerForm.controls[field].touched ||
+                 (customerForm.controls[field].untouched && customerForm.controls[field].hasError && isSaveClicked)) ? 
+                 !customerForm.controls[field].valid : false;
+                this.formError[field] = '';
+                if (hasError) {
+                    for (let key in customerForm.controls[field].errors) {
+                        if (customerForm.controls[field].errors.hasOwnProperty(key)) {
+                            this.formError[field] += this._validationMessages[field][key] + ' ';
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    initiaLOnValueChanged<T extends FormGroup, T1 extends FormGroup>(data: T, customerForm: T1) {
+        for (let field in this.formError) {
+            if (this.formError.hasOwnProperty(field)) {
+                let hasError = customerForm.controls[field] !== undefined && customerForm.controls[field].touched ?
+                    !customerForm.controls[field].valid : false;
+                this.formError[field] = '';
+                if (hasError) {
+                    for (let key in customerForm.controls[field].errors) {
+                        if (customerForm.controls[field].errors.hasOwnProperty(key)) {
+                            this.formError[field] += this._validationMessages[field][key] + ' ';
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    onValueChanged<T extends FormGroup, T1 extends FormGroup>(data: T, customerForm: T1) {
+        for (let field in this.formError) {
+            if (this.formError.hasOwnProperty(field)) {
+                let hasError = customerForm.controls[field] !== undefined ?
+                    !customerForm.controls[field].valid : false;
+                this.formError[field] = '';
+                if (hasError) {
+                    for (let key in customerForm.controls[field].errors) {
+                        if (customerForm.controls[field].errors.hasOwnProperty(key)) {
+                            this.formError[field] += this._validationMessages[field][key] + ' ';
+                        }
+                    }
+                }
+            }
+        }
+    }
+    isValid(formGroup: FormGroup): boolean {
+        for (let key in formGroup.controls) {
+            if (formGroup.controls[key] instanceof FormGroup) {
+                if (!this.isValid(<FormGroup>formGroup.controls[key])) {
+                    return false;
+                }
+            }
+            else if (formGroup.controls[key] instanceof FormArray) {
+                let formArray = <FormArray>formGroup.controls[key];
+                for (let skey in formArray.controls) {
+                    if (!this.isValid(<FormGroup>formArray.controls[skey])) {
+                        return false;
+                    }
+                }
+            }
+            else if (formGroup.controls[key] instanceof FormControl) {
+                if (((!formGroup.controls[key].valid &&
+                    formGroup.controls[key].hasError('required')) || formGroup.controls[key].status === 'INVALID'
+                    || formGroup.controls[key].hasError('minlength')) && !(formGroup.controls[key].status === 'DISABLED')) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    retrieve(key: string): any {
+        let item = this.storage.getItem(key);
+        if (item && item !== 'undefined') {
+            return JSON.parse(this.storage.getItem(key));
+        }
+        return;
+    }
+
+    transform(value: number | string, fractionSize: number): string {
+        if (value === null || value === '' || value <= 0) {
+            return null;
+        }
+        if (value.toString().match('[.].*') !== null) {
+            let i = value.toString().match('[.].*')[0].length - 1;
+            if (fractionSize === 0 && i > 0) {
+                fractionSize = 2;
+            }
+        }
+        let [integer, fraction = ''] = (value || '').toString()
+            .split(this.DECIMAL_SEPARATOR);
+        fraction = fractionSize > 0
+            ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
+            : '';
+        integer = integer.replace(/\B(?=(\d{3})+(?!\d))/g, this.THOUSANDS_SEPARATOR);
+        return integer + fraction;
+    }
+    checkRange(event, minValue, maxValue) {
+        if (parseFloat(event.target.value) < minValue || parseFloat(event.target.value) > maxValue) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    NumberLessThenComparison(event, value) {
+        if (parseFloat(event.target.value) < value) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    parse(value: string, fractionSize = 2): number {
+        let [integer, fraction = ''] = (value || '').split(this.DECIMAL_SEPARATOR);
+
+        integer = integer.replace(new RegExp(this.THOUSANDS_SEPARATOR, 'g'), '');
+
+        fraction = parseInt(fraction, 10) > 0 && fractionSize > 0
+            ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
+            : '';
+        if (integer === '' || integer === 'NaN' || integer === undefined) {
+            return +('0');
+        }
+        return +(integer);
+    }
+
+    parseFG(value: string, fractionSize = 2): string {
+        let [integer, fraction = ''] = (value || '').split(this.DECIMAL_SEPARATOR);
+
+        integer = integer.replace(new RegExp(this.THOUSANDS_SEPARATOR, 'g'), '');
+
+        fraction = parseInt(fraction, 10) > 0 && fractionSize > 0
+            ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
+            : '';
+        if (integer === '' || integer === 'NaN' || integer === undefined) {
+            return (+('0')).toString();
+        }
+        return integer + fraction;
+    }
+    validateAlphaOnly(request: any): boolean {
+        let charCode: number = request.which || request.keyCode;
+        let specialKeys: any[];
+        specialKeys = [8];
+        return ((charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122)
+            || charCode === 9 || specialKeys.indexOf(charCode) !== -1);
+    }
+    validateNoSpace(request: any): boolean {
+        let charCode: number = request.which || request.keyCode;
+        let specialKeys: any[];
+        specialKeys = [8];
+        return (charCode !== 32 || specialKeys.indexOf(charCode) !== -1);
+    }
+
+
+    onlyDecimalNumberKey(event) {
+        let charCode = (event.which) ? event.which : event.keyCode;
+        if (charCode !== 46 && charCode > 31
+            && (charCode < 48 || charCode > 57) && charCode !== 46) {
+            return false;
+        }
+        return true;
+    }
+    validateNumOnly(request: any): boolean {
+        let charCode: number = request.which || request.keyCode;
+        let specialKeys: any[];
+        specialKeys = [8];
+        return ((charCode >= 48 && charCode <= 57) || charCode === 9 || specialKeys.indexOf(charCode) !== -1);
+    }
+    validateDateNumOnly(request: any): boolean {
+        let charCode: number = request.which || request.keyCode;
+        if (request.target.value.length + 1 > 10 && charCode !== 8 && charCode !== 9) {
+            return false;
+        }
+        let specialKeys: any[];
+        specialKeys = [8];
+        return ((charCode >= 48 && charCode <= 57) || charCode === 9 || specialKeys.indexOf(charCode) !== -1);
+    }
+    validateZipNumOnly(request: any): boolean {
+        let charCode: number = request.which || request.keyCode;
+        let specialKeys: any[];
+        specialKeys = [8];
+        return ((charCode >= 48 && charCode <= 57) || specialKeys.indexOf(charCode) !== -1);
+    }
+
+    getFormattedZip(zip): any {
+        if (zip === null) {
+            return;
+        }
+        let zipCode: string;
+        if (typeof zip === 'string') {
+            zipCode = zip !== null ? zip : null;
+        }
+        else {
+            zipCode = zip !== null ? zip.target.value : null;
+        }
+        if (zipCode !== null && zipCode.length <= 5) {
+            return zipCode;
+        }
+        let reg = /^\d{5,10}$/;
+        if (zipCode !== null) {
+            if (reg.test(zipCode)) {
+                if (typeof zip === 'string') {
+                    if (zip.length >= 6) {
+                        return zip = zipCode.substring(0, 5) + '-' + zipCode.substring(5, 9);
+                    }
+                    else {
+                        return zip;
+                    }
+                }
+                else {
+                    let charCode: number = zip.which || zip.keyCode;
+                    let specialKeys, specialTabKey: any[];
+                    specialTabKey = [9];
+                    specialKeys = [8];
+                    if (specialTabKey.indexOf(charCode) !== 0) {
+                        if (specialKeys.indexOf(charCode) === -1) {
+                            if (zip.target.value.length >= 4) {
+                                zip.target.value = zipCode.substring(0, 5) + '-' + zipCode.substring(5, 9);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    GetFormattedSSN(ssn): any {
+        if (ssn !== null) {
+            if (ssn.length === 9) {
+                ssn = ssn.substring(0, 3) + '-' + ssn.substring(3, 5) + '-' + ssn.substring(5, 9);
+            }
+            return ssn;
+        }
+        else {
+            return ssn = '';
+        }
+    }
+    checkSpace(e, tabIndex, cntrlName: string, FG: FormArray): boolean {
+        let _FG = <FormGroup>FG.at(tabIndex);
+        let text: string = _FG.controls[cntrlName].value;
+
+        let charCode: number = e.which || e.keyCode;
+        if ((charCode === 32) && (text.length > 0)) {
+            if (text[text.length - 1] === ' ') {
+                return false;
+            }
+        }
+        else if ((charCode === 32) && (text.length === 0)) {
+            return false;
+        }
+    }
+
+    GetFormattedPhoneNo(phoneNo): any {
+        if (phoneNo !== null && phoneNo !== undefined) {
+            if (typeof phoneNo === 'string') {
+                return phoneNo = phoneNo.substring(0, 3) + '-' + phoneNo.substring(3, 6) + '-' + phoneNo.substring(6, 10);
+            }
+            else {
+                let charCode: number = phoneNo.which || phoneNo.keyCode;
+                let specialKeys, specialTabKey: any[];
+                specialTabKey = [9];
+                specialKeys = [8];
+                if (specialTabKey.indexOf(charCode) !== 0) {
+                    if (specialKeys.indexOf(charCode) === -1) {
+                        if ((!phoneNo.shiftKey && phoneNo.keyCode >= 48 && phoneNo.keyCode <= 57)
+                            || (phoneNo.keyCode >= 96 && phoneNo.keyCode <= 105)) {
+                            if (phoneNo.target.value.length === 3) {
+                                phoneNo.target.value += '-';
+                            }
+                            else if (phoneNo.target.value.length === 7) {
+                                phoneNo.target.value += '-';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    stringToDate(_date, _format, _delimiter) {
+        let formatLowerCase = _format.toLowerCase();
+        let formatItems = formatLowerCase.split(_delimiter);
+        let dateItems = _date.split(_delimiter);
+        let monthIndex = formatItems.indexOf('mm');
+        let dayIndex = formatItems.indexOf('dd');
+        let yearIndex = formatItems.indexOf('yyyy');
+        let month = (+(dateItems[monthIndex]));
+        month -= 1;
+        let formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
+        return formatedDate;
+    }
+    numberOnlyPasteAndDrop(event: any) {
+        let formattedPatten = /^\d+(,*\d)*(.\d{1,2})?$/;
+        let result = false;
+
+        let input = '';
+        if (event.type === 'paste') {
+            input = event.clipboardData.getData('text/plain');
+        }
+        else if (event.type === 'drop') {
+            input = event.dataTransfer.getData('Text');
+        }
+        else {
+            input = event.target.value;
+        }
+        input = input.replace(/ /g, '');
+        let regExPattern = new RegExp(formattedPatten);
+        result = regExPattern.test(input);
+        return result;
+    }
+    NumOnly(event: any) {
+        let numberOnly = /^[0-9]+$/;
+        let input = '';
+        if (event.type === 'paste') {
+            input = event.clipboardData.getData('text/plain');
+        }
+        else if (event.type === 'drop') {
+            input = event.dataTransfer.getData('Text');
+        }
+        else {
+            input = event.target.value;
+        }
+        let regEx = new RegExp(numberOnly);
+        let result = regEx.test(input);
+        return result;
+    }
+    DateOnlyPasteAndDrop(event: any) {
+        let regEx = new RegExp(/^(0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$/);
+        let input = '';
+        if (event.type === 'paste') {
+            input = event.clipboardData.getData('text/plain');
+        }
+        else if (event.type === 'drop') {
+            input = event.dataTransfer.getData('Text');
+        }
+        else if (event.type === 'keypress') {
+            input = event.target.value;
+        }
+        let result = regEx.test(input);
+        return result;
+    }
+    validateDateOnly(event: any): boolean {
+        let numberResponse = this.NumOnly(event);
+        let response = false;
+        if (numberResponse && event.target.value.length === 7) {
+            event.target.value = event.target.value + event.key;
+            event.target.value = event.target.value.replace(/^([\d]{2})([\d]{2})([\d]{4})$/, '$1/$2/$3');
+            response = this.validateDateNumOnly(event);
+        }
+        else {
+            response = this.validateDateNumOnly(event);
+        }
+        return response;
+    }
+}
+
+
+
+
+
+
+
+
+
