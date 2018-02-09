@@ -1,0 +1,122 @@
+import { AbstractControl, ValidatorFn } from '@angular/forms';
+const PADDING = '000000';
+const DECIMAL_SEPARATOR = '.';
+const THOUSANDS_SEPARATOR = ',';
+export class CustomValidator {
+    static AbstractRangeValidator(min: number, max: number): ValidatorFn {
+        return (c: AbstractControl): { [key: string]: boolean } | null => {
+            if (c.value === null || c.value === '') {
+                return null;
+            }
+            let d = (c.value.toString().replace(/,/g, ''));
+            if (isNaN(d)) {
+                return null;
+            }
+            if (d !== undefined && (isNaN(d) || +(d) < min || +(d) > max)) {
+                return { 'range': true };
+            };
+            return null;
+        };
+    }
+    static AbstractRangeValidatorForFG(min: number, max: number): ValidatorFn {
+        return (c: AbstractControl): { [key: string]: boolean } | null => {
+            if (c.value === null || c.value === '') {
+                return null;
+            }
+            let match = c.value.toString().match('[,]');
+            let d;
+            if (match !== null) {
+                d = (c.value.toString().replace(/,/g, ''));
+            }
+            else {
+                d = +c.value;
+            }
+            if (isNaN(d)) {
+                return null;
+            }
+            if (d !== undefined && (isNaN(d) || +(d) < min || +(d) > max)) {
+                return { 'range': true };
+            };
+            return null;
+        };
+    }
+    static AbstractNumaricAndMaxLengthRangeValidator(value, decimalLength, keyCode): ValidatorFn {
+        if (keyCode !== 46 && keyCode > 31
+            && (keyCode < 48 || keyCode > 57) && keyCode !== 46) { return null; }
+        return (c: AbstractControl): { [key: string]: boolean } | null => {
+            if (value === 0) {
+                if (c.value === null || c.value === '') {
+                    return null;
+                }
+                let val = CustomValidator.ValueTransform(c.value, decimalLength);
+                value++;
+                if (val !== null) {
+                    c.setValue(val);
+                }
+                return null;
+            }
+            else {
+                value = 0;
+                return null;
+            }
+        };
+    }
+
+    static AbstractNumaricAndMaxLengthRangeValidator1111(value, decimalLength, keyCode) {
+        if (value === 0) {
+            if (keyCode.value === null || keyCode.value === '') {
+                return null;
+            }
+            let val = CustomValidator.ValueTransform(keyCode.value, decimalLength);
+            value++;
+            if (val !== null) {
+                keyCode.setValue(val);
+            }
+            return null;
+        }
+        else {
+            value = 0;
+            return null;
+        }
+
+    }
+    static ValueTransform(event: any, decimalLength) {
+        let charCode = +(window.name);
+        if (charCode !== 46 && charCode > 31
+            && (charCode < 48 || charCode > 57) && charCode !== 46) { }
+        let value = event;
+        {
+            if (value == null) {
+                return null;
+            }
+            if (value === '.') {
+                return value;
+            }
+
+            value = value.toString();
+            let rMatch = value.match('^^(.*)?[.](.*)$');
+            if (rMatch !== null) {
+                if (rMatch[2].length > 2) { }
+                else {
+                    return null;
+                }
+            };
+
+            let [scaleValue, decimalValue = ''] = (value || '').split('.');
+            scaleValue = scaleValue.replace(/\D/g, '');
+            decimalValue = decimalValue.replace(/\D/g, '');
+            if (scaleValue) {
+                scaleValue = ((scaleValue)).toString();
+                if (scaleValue === 'NaN') { return null; }
+                scaleValue = scaleValue.substring(0, 10);
+                scaleValue = scaleValue.replace(/\B(?=(\d{3})+(?!\d))/g, THOUSANDS_SEPARATOR);
+            }
+            if (decimalValue) {
+                decimalValue = (decimalValue + PADDING).substring(0, decimalLength);
+                decimalValue = (decimalValue).substring(0, decimalLength);
+                return value = scaleValue + DECIMAL_SEPARATOR + decimalValue;
+            }
+            return scaleValue;
+        }
+    }
+}
