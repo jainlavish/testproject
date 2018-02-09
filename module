@@ -1,0 +1,38 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { HttpModule } from '@angular/http';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { SharedModule } from '../shared/shared.module';
+import { LoanEstimateRoutingModule } from './loan-estimate.routing';
+import { Ng2AutoCompleteModule } from 'ng2-auto-complete';
+import { MyDatePickerModule } from 'mydatepicker';
+import { PendingChangesGuard, AccessGuard, FormatThousandsPipe, ValidationService } from './../shared';
+import { SlimScrollModule } from 'ng2-slimscroll';
+import { PanelModule, AccordionModule } from 'primeng/primeng';
+import { LOAN_ESTIMATE_COMPONENTS } from './';
+
+@NgModule({
+    imports: [
+        CommonModule,
+        HttpModule,
+        FormsModule,
+        ReactiveFormsModule,
+        SharedModule,        
+        MyDatePickerModule,
+        SlimScrollModule,
+        PanelModule,
+        AccordionModule,
+        Ng2AutoCompleteModule,
+        LoanEstimateRoutingModule,
+    ],
+    declarations: [
+        LOAN_ESTIMATE_COMPONENTS
+    ],
+    providers: [ValidationService,
+        FormatThousandsPipe,
+        AccessGuard,
+        PendingChangesGuard]
+})
+export class LoanEstimateModule {
+}
+
