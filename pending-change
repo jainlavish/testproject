@@ -1,0 +1,36 @@
+import { Injectable } from '@angular/core';
+import { CanDeactivate } from '@angular/router';
+import { Observable, Observer } from 'rxjs';
+import { AppComponent } from '../../app.component';
+import { AlertService, GlobalVariable } from '../../shared';
+import { ConfirmationService } from 'primeng/primeng';
+
+@Injectable()
+export class PendingChangesGuard implements CanDeactivate<AppComponent> {
+    readonly WARNING = 'Warning';
+    readonly WARNING_MESSAGE = 'You have unsaved changes. \n Are you sure you want to leave this page?';
+    constructor(private confirmationService: ConfirmationService) {
+    }
+    canDeactivate(): Observable<boolean> | boolean {
+        if (AlertService.getInstance().enabled) {
+
+            return Observable.create((observer: Observer<boolean>) => {
+                this.confirmationService.confirm({
+                    header: this.WARNING,
+                    message: this.WARNING_MESSAGE,
+                    accept: () => {
+                        GlobalVariable.isEdit = false; // sign out dirty flag should not be shown from pipleine
+                        AlertService.getInstance().stop();
+                        observer.next(true);
+                        observer.complete();
+                    },
+                    reject: () => {
+                        observer.next(false);
+                        observer.complete();
+                    }
+                });
+            });
+        }
+        return true;
+    }
+}
