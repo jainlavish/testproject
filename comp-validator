@@ -1,0 +1,67 @@
+export class Borrower {
+    public formError: { [id: string]: string };
+    public _validationMessages: { [id: string]: { [id: string]: string } };
+    constructor(private customerForm: any) {
+        this.formError = {
+            'firstName': '',
+            'middleName': '',
+            'lastName': '',
+            'suffix': '',
+            'phoneNumber': '',
+            'emailAddress': '',
+            'zip': '',
+            'state': '',
+            'mailingAddress': '',
+            'city': ''
+        };
+
+        this._validationMessages = {
+            'firstName': {
+                'required': 'Please enter a valid value.',
+                'pattern': 'Please enter a valid value.',
+                'maxlength': 'Please enter a valid value.'
+            },
+            'middleName': {
+                'maxlength': 'Please enter a valid value.'
+            },
+            'lastName': {
+                'required': 'Please enter a valid value.',
+                'pattern': 'Please enter a valid value.',
+                'maxlength': 'Please enter a valid value.'
+            },
+            'suffix': {
+                'pattern': 'Please enter a valid value.',
+                'maxlength': 'Please enter a valid value.'
+            },
+            'phoneNumber': {
+                'required': 'Please enter a valid value.',
+                'pattern': 'Please enter a valid value.',
+                'minlength': 'Please enter a valid value.',
+                'maxlength': 'Please enter a valid value.'
+            },
+            'emailAddress': {
+                'required': 'Please enter a valid value.',
+                'pattern': 'Please enter a valid value.',
+                'maxlength': 'Please enter a valid value.'
+            },
+            'zip': {
+                'required': 'Please enter a valid value.',
+                'pattern': 'Please enter a valid value.'
+            },
+            'state': {
+                'required': 'Please enter a valid value.',
+                'pattern': 'Please enter a valid value.',
+                'maxlength': 'Please enter a valid value.',
+                'minlength': 'Please enter a valid value.'
+            },
+            'mailingAddress': {
+                'required': 'Please enter a valid value.',
+                'pattern': 'Please enter a valid value.'
+            },
+            'city': {
+                'required': 'Please enter a valid value.',
+                'pattern': 'Please enter a valid value.'
+            }
+        };
+    }
+}
