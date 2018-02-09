@@ -1,0 +1,25 @@
+import { RouterModule, Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { SecurityGuard } from './shared';
+
+export const routes: Routes = [
+    {
+        path: '',
+        redirectTo: '/loan-estimate',
+        pathMatch: 'full'
+    },
+    {
+        path: 'account',
+        loadChildren: './account/account.module#AccountModule'
+    },
+    {
+        path: 'loan-estimate',
+        loadChildren: './loan-estimate/loan-estimate.module#LoanEstimateModule',
+        canLoad: [SecurityGuard]
+    }
+];
+@NgModule({
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
