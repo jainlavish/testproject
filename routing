@@ -1,0 +1,125 @@
+
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { SecurityGuard,PendingChangesGuard,AccessGuard } from '../shared';
+
+import {  ApplicationDateComponent,
+          BrokerCompensationComponent,
+          BorrowerInfoComponent,
+          CashToCloseComponent,
+          ComplianceCheckComponent,
+          ImpersonateUserComponent,
+          LoanPipelineComponent,
+          LoanInfoComponent,
+          LoanStatusComponent,
+          PricingLockComponent,
+          PropertyInfoComponent,
+          SectionAComponent,
+          SectionFGComponent,
+          SectionCEComponent,
+          SectionBComponent,
+          SectionHComponent,
+          ServiceProviderComponent,
+          LoanEstimateViewComponent } from './';
+
+const routes: Routes = [{
+  path: '',
+  component: LoanEstimateViewComponent,
+  canActivate: [SecurityGuard],
+  canDeactivate: [PendingChangesGuard],
+  children: [
+    {
+      path: '',
+      component: LoanPipelineComponent,
+      canActivate: [AccessGuard]
+    },
+    {
+      path: 'application-date',
+      component: ApplicationDateComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'borrower-info',
+      component: BorrowerInfoComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'property-info',
+      component: PropertyInfoComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'loan-info',
+      component: LoanInfoComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'pricing-lock',
+      component: PricingLockComponent,
+      canDeactivate: [PendingChangesGuard]
+
+    },
+    {
+      path: 'broker-compensation',
+      component: BrokerCompensationComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'sec-a-info',
+      component: SectionAComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'sec-b-info',
+      component: SectionBComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'sec-c-e-info',
+      component: SectionCEComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'sec-f-g-info',
+      component: SectionFGComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'sspl-info',
+      component: ServiceProviderComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'cash-to-close',
+      component: CashToCloseComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'impersonate-user',
+      component: ImpersonateUserComponent,
+      canDeactivate: [PendingChangesGuard],
+      canActivate: [AccessGuard]
+    },
+    {
+      path: 'loan-status',
+      component: LoanStatusComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'sec-h-info',
+      component: SectionHComponent,
+      canDeactivate: [PendingChangesGuard]
+    },
+    {
+      path: 'compliance-check',
+      component: ComplianceCheckComponent,
+      canDeactivate: [PendingChangesGuard]
+    }
+  ]
+}];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class LoanEstimateRoutingModule { }
