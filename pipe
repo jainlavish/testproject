@@ -1,0 +1,86 @@
+import { Pipe, PipeTransform } from '@angular/core';
+import { Constants,GlobalVariable } from '../';
+
+const PADDING = '000000000';
+@Pipe({ name: 'thousandsSeparatorWithDecimalPipe' })
+export class FormatThousandsWithDecimal implements PipeTransform {
+
+    DECIMAL_SEPARATOR: string;
+    THOUSANDS_SEPARATOR: string;
+    CURRENCY_MAXSCALELENGTH: number;
+    CURRENCY_MAXDECIMALLENGTH: number;
+
+    constructor() {
+        this.DECIMAL_SEPARATOR = Constants.DECIMAL_SEPARATOR;
+        this.THOUSANDS_SEPARATOR = Constants.THOUSANDS_SEPARATOR;
+        this.CURRENCY_MAXDECIMALLENGTH = Constants.CURRENCY_MAXDECIMALLENGTH;
+        this.CURRENCY_MAXSCALELENGTH = 10;
+    }
+
+    transform(value: string, opt: string, args?: any[]): string {
+        if (value == null) {
+            return;
+        }
+        let count = (value.match(/\./g) || []).length;
+        if (count > 1) {
+            return value.substring(0, value.length - 1);
+        }
+        if (value.match('^(.*)(.)([0-9]+)$') !== null) {
+            GlobalVariable.publicValue = value;
+        }
+        if (value.match('^(.*)(.)([0-9]+)?$') !== null && opt === 'up') {
+            GlobalVariable.publicValue = value;
+            return value;
+        }
+        if (value === '.') {
+            return value;
+        }
+        value = value.toString();
+        let [scaleValue, decimalValue = ''] = (value || '').split('[]');
+
+        scaleValue = scaleValue.replace(/\D/g, '');
+        if (value.match(',') !== null) {
+            value = value.replace(/,/g, '');
+        }
+        if (opt !== 'up') {
+            GlobalVariable.publicValue = value;
+            scaleValue = Math.round(+value).toString();
+        }
+        decimalValue = decimalValue.replace(/\D/g, '');
+
+        if (scaleValue) {
+            scaleValue = (+(scaleValue)).toString();
+            scaleValue = scaleValue.substring(0, this.CURRENCY_MAXSCALELENGTH);
+            scaleValue = scaleValue.replace(/\B(?=(\d{3})+(?!\d))/g, this.THOUSANDS_SEPARATOR);
+        }
+        else if (args && args[0] === 'decimal') {
+            scaleValue = '0';
+        }
+        if (args && args[0] === 'decimal' && scaleValue.length > 0) {
+            decimalValue = (decimalValue + PADDING).substring(0, this.CURRENCY_MAXDECIMALLENGTH);
+        }
+        else if (decimalValue) {
+            decimalValue = (decimalValue).substring(0, this.CURRENCY_MAXDECIMALLENGTH);
+        }
+        if (decimalValue) {
+            return scaleValue;
+        }
+        else {
+            return scaleValue;
+        }
+    }
+    parse(value: string): number {
+        if (value) {
+            let [integer, fraction = ''] = (value.toString() || '').split(this.DECIMAL_SEPARATOR);
+            integer = integer.replace(new RegExp(this.THOUSANDS_SEPARATOR, 'g'), '');
+            integer = integer.substring(0, this.CURRENCY_MAXSCALELENGTH);
+            fraction = parseInt(fraction, 10) > 0 && this.CURRENCY_MAXDECIMALLENGTH > 0
+                ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, this.CURRENCY_MAXDECIMALLENGTH)
+                : '';
+            return parseFloat(integer + fraction);
+        }
+        else {
+            return 0;
+        }
+    }
+}
