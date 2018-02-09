@@ -1,0 +1,36 @@
+
+export class AlertService {
+    static instance: AlertService;
+    static isCreating = false;
+    enabled = false;
+    message = 'You will lose unsaved changes by navigating away, do you want to continue ?';
+    static getInstance() {
+        if (AlertService.instance == null) {
+            AlertService.isCreating = true;
+            AlertService.instance = new AlertService();
+            AlertService.isCreating = false;
+        }
+
+        return AlertService.instance;
+    }
+
+    constructor() {
+        if (!AlertService.isCreating) {
+            throw new Error(
+                "You can't call new in Singleton instances! Call SingletonService.getInstance() instead.");
+        }
+    }
+
+
+    start(
+        message = 'You will lose unsaved changes by navigating away, do you want to continue ?') {
+        this.message = message;
+        this.enabled = true;
+    }
+
+    stop() {
+        this.message =
+            'You will lose unsaved changes by navigating away, do you want to continue ?';
+        this.enabled = false;
+    }
+}
